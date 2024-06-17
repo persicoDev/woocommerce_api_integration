@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.1.20-fpm
+    container_name: laravel_app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel
+    depends_on:
+      - mongo
+    environment:
+      - PHP_EXTENSIONS=mongodb
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  web:
+    image: nginx:latest
+    container_name: laravel_web
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - laravel
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo_db
+    networks:
+      - laravel
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+networks:
+  laravel:
+
+volumes:
+  mongo_data:
